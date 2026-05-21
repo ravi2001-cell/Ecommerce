@@ -1,3 +1,11 @@
+// Local product database stored directly in the browser memory
+const products = [
+    { id: 1, name: "Premium Wireless Headphones", price: 12999, description: "Noise-cancelling over-ear headphones.", image: "https://unsplash.com" },
+    { id: 2, name: "Minimalist Smart Watch", price: 18499, description: "Amoled display with health monitoring.", image: "https://unsplash.com" },
+    { id: 3, name: "Ergonomic Mechanical Keyboard", price: 7999, description: "RGB backlit tactile typing experience.", image: "https://unsplash.com" },
+    { id: 4, name: "Ultra-Wide Gaming Monitor", price: 34999, description: "34-inch curved screen with 144Hz refresh rate.", image: "https://unsplash.com" }
+];
+
 let cart = JSON.parse(localStorage.getItem('nexus_cart')) || [];
 
 function formatCurrency(amount) {
@@ -8,23 +16,20 @@ function toggleCart() {
     document.getElementById('cart-sidebar').classList.toggle('active');
 }
 
-async function loadStoreProducts() {
-    try {
-        const response = await fetch('/api/products');
-        const products = await response.json();
-        const grid = document.getElementById('product-grid');
-        grid.innerHTML = products.map(product => `
-            <div class="product-card">
-                <img src="${product.image}" alt="${product.name}">
-                <div class="product-info">
-                    <h3>${product.name}</h3>
-                    <p>${product.description}</p>
-                    <div class="price-tag">${formatCurrency(product.price)}</div>
-                    <button class="add-btn" onclick="addToCart(${product.id}, '${product.name}', ${product.price})">Add To Cart</button>
-                </div>
+// Loads product data cleanly from memory instantly
+function loadStoreProducts() {
+    const grid = document.getElementById('product-grid');
+    grid.innerHTML = products.map(product => `
+        <div class="product-card">
+            <img src="${product.image}" alt="${product.name}">
+            <div class="product-info">
+                <h3>${product.name}</h3>
+                <p>${product.description}</p>
+                <div class="price-tag">${formatCurrency(product.price)}</div>
+                <button class="add-btn" onclick="addToCart(${product.id}, '${product.name}', ${product.price})">Add To Cart</button>
             </div>
-        `).join('');
-    } catch (err) { console.error(err); }
+        </div>
+    `).join('');
 }
 
 function addToCart(id, name, price) {
@@ -57,20 +62,14 @@ function updateCartUI() {
     document.getElementById('cart-total-price').innerText = formatCurrency(finalTotal);
 }
 
-async function submitCheckout() {
+// Displays simulated interactive success screen without calling broken backend servers
+function submitCheckout() {
     if(cart.length === 0) return alert("Your cart is empty!");
-    try {
-        const response = await fetch('/api/checkout', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ items: cart })
-        });
-        const result = await response.json();
-        if(result.success) {
-            alert(`${result.message}\nTotal Charged: ${formatCurrency(result.total)}`);
-            cart = []; updateCartUI(); toggleCart();
-        }
-    } catch (error) { alert("Error processing checkout."); }
+    const finalTotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+    alert(`🎉 Order Confirmed!\nTotal Processed: ${formatCurrency(finalTotal)}\nThank you for shopping at Nexus Tech!`);
+    cart = [];
+    updateCartUI();
+    toggleCart();
 }
 
 loadStoreProducts();
